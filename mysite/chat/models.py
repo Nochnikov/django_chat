@@ -15,10 +15,11 @@ class User(models.Model):
     password = models.CharField(max_length=10)
 
     chat = models.ManyToManyField(ChatSpace)
+    friends = models.ManyToManyField('User')
 
 
 class Profile(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='profile')
     is_premium = models.BooleanField(default=False)
     first_name = models.CharField(max_length=15, null=True)
     last_name = models.CharField(max_length=15, null=True)
@@ -27,7 +28,14 @@ class Profile(models.Model):
 
 
 class Message(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    chat_id = models.ForeignKey(ChatSpace, on_delete=models.CASCADE)
-    message = models.TextField()
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='message')
+    chat_id = models.ForeignKey(ChatSpace, on_delete=models.CASCADE, related_name='chat')
+    message_text = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    type_is = models.CharField(max_length=50)
+
+    @property
+    def is_updated(self):
+        return self.sent_at != self.updated_at
 
