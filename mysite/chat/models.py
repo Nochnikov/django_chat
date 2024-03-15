@@ -39,3 +39,11 @@ class Message(models.Model):
     def is_updated(self):
         return self.sent_at != self.updated_at
 
+
+class Group(models.Model):
+    group_name = models.CharField(max_length=50, null=False)
+    group_description = models.CharField(null=True)
+
+    subscriptions = models.ManyToManyField(User)
+
+
