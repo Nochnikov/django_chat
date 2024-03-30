@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 
 
@@ -9,26 +10,16 @@ class ChatSpace(models.Model):
     is_super_group = models.BooleanField(default=False)
 
 
-class User(models.Model):
-    username = models.CharField(max_length=50)
-    email = models.CharField(max_length=20)
-    password = models.CharField(max_length=10)
-
-    chat = models.ManyToManyField(ChatSpace)
-    friends = models.ManyToManyField('User')
-
-
 class Profile(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='profile')
-    is_premium = models.BooleanField(default=False)
+    user_id = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='profile')
     first_name = models.CharField(max_length=15, null=True)
     last_name = models.CharField(max_length=15, null=True)
-    has_avatar = models.BooleanField(default=False)
+    has_avatar = models.ImageField(upload_to='images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Message(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='message')
+    user_id = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='message')
     chat_id = models.ForeignKey(ChatSpace, on_delete=models.CASCADE, related_name='chat')
     message_text = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
@@ -44,6 +35,4 @@ class Group(models.Model):
     group_name = models.CharField(max_length=50, null=False)
     group_description = models.CharField(null=True)
 
-    subscriptions = models.ManyToManyField(User)
-
-
+    subscriptions = models.ManyToManyField(get_user_model())
