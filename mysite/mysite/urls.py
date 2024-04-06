@@ -23,7 +23,7 @@ Including another URLconf
 """
 
 urlpatterns = [
-    # path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
     path('chat/', include('chat.urls')),
     path('auth/', include('authorization.urls'))
 ]

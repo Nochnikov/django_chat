@@ -7,7 +7,7 @@ class UserManager(BaseUserManager):
         user = self.model(username=username)
         user.set_password(password)
         user.role = role
-        user.save(self._db)
+        user.save(using=self._db)
 
         return user
 
@@ -15,6 +15,6 @@ class UserManager(BaseUserManager):
         user = self.create_user(username, password, role=1)
         user.is_superuser = True
         user.is_staff = True
-        user.save(self._db)
+        user.save(using=self._db)
 
         return user

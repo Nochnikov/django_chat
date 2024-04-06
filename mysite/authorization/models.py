@@ -23,7 +23,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_premium = models.BooleanField(default=False)
 
-    chat = models.ManyToManyField(ChatSpace)
+    chats = models.ManyToManyField(ChatSpace)
     friends = models.ManyToManyField("User")
 
     objects = UserManager()
