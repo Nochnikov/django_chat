@@ -13,19 +13,16 @@ class ChatSpace(models.Model):
     )
 
     chat_name = models.CharField(null=True, blank=True, max_length=50)
+    created_at = models.DateTimeField(auto_now=True)
     chat_type = models.CharField(choices=CHAT_TYPE, null=False)
     is_super_group = models.BooleanField(default=False)
-
-
-    # @property
-    # def last_message(self):
 
     def __str__(self):
         return f"{self.chat_name}, chat type: {self.chat_type}, super group: {self.is_super_group}"
 
 
 class Profile(models.Model):
-    user_id = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='profile')
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='profile')
     first_name = models.CharField(max_length=15, null=True)
     last_name = models.CharField(max_length=15, null=True)
     has_avatar = models.ImageField(upload_to='images/', blank=True, null=True)
@@ -33,8 +30,8 @@ class Profile(models.Model):
 
 
 class Message(models.Model):
-    user_id = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='message')
-    chat_id = models.ForeignKey(ChatSpace, on_delete=models.CASCADE, related_name='chat')
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='message')
+    chat = models.ForeignKey(ChatSpace, on_delete=models.CASCADE, related_name='chat')
     message_text = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -43,6 +40,10 @@ class Message(models.Model):
     @property
     def is_updated(self):
         return self.sent_at != self.updated_at
+
+    @property
+    def last_message(self):
+        return f"{self.message_text[:10]}"
 
 
 class Group(models.Model):
