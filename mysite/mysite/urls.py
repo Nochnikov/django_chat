@@ -1,3 +1,10 @@
+from django.conf.urls.static import static
+from django.urls import include
+from django.contrib import admin
+
+from mysite import settings
+
+from django.urls import path
 """
 URL configuration for mysite project.
 
@@ -14,9 +21,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('chat/', include('chat.urls')),
+    path('auth/', include('authorization.urls'))
 ]
+
+if settings.DEBUG is True:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
