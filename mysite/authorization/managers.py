@@ -18,4 +18,3 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
 
         return user
-

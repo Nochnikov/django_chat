@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics, mixins
-from chat.models import ChatSpace, Message
-from chat.serializers import ChatSpaceSerializer, MessageSerializer, ChatSpaceRetrivSerializer
+from chat.models import ChatSpace, Message, Profile
+from chat.serializers import ChatSpaceSerializer, MessageSerializer, ChatSpaceRetrivSerializer, ProfileSerializer
 
 
 # Create your views here.
@@ -28,17 +28,12 @@ class CreateChatSpaceView(generics.CreateAPIView):
         serializer.save(chat_name=chat_name)
 
 
-class RetrieveChatSpaceView(generics.RetrieveAPIView):
-    pass
-
-
-class CreateUpdateGetMessageView(
+class CreateUpdateGetDeleteMessageView(
     generics.GenericAPIView,
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.ListModelMixin,
     mixins.DestroyModelMixin):
-
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
 
@@ -54,3 +49,15 @@ class CreateUpdateGetMessageView(
 
     def delete(self, request, *args, **kwargs):
         return self.delete(request, *args, **kwargs)
+
+
+class CreateProfileView(generics.GenericAPIView, mixins.CreateModelMixin, mixins.UpdateModelMixin):
+    serializer_class = ProfileSerializer
+    queryset = Profile.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(self, request, *args, **kwargs)

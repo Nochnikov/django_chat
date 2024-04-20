@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from chat.models import ChatSpace, Message
+from chat.models import ChatSpace, Message, Profile
 
 
 class ChatSpaceSerializer(serializers.ModelSerializer):
@@ -21,8 +21,14 @@ class LastMessageSerializer(serializers.ModelSerializer):
 
 
 class ChatSpaceRetrivSerializer(serializers.ModelSerializer):
-    message = LastMessageSerializer(read_only=True)
+    # message = LastMessageSerializer(read_only=True)
 
     class Meta:
         model = ChatSpace
-        fields = ("chat_name", "chat_type", 'message', 'created_at')
+        fields = ("chat_name", "chat_type", 'created_at')
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ('user', 'first_name', 'last_name')

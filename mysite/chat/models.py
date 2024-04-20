@@ -41,9 +41,9 @@ class Message(models.Model):
     def is_updated(self):
         return self.sent_at != self.updated_at
 
-    @property
-    def last_message(self):
-        return f"{self.message_text[:10]}"
+    # @property
+    # def last_message(self):
+    #     return f"{self.message_text[:10]}"
 
 
 class Group(models.Model):
