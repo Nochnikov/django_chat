@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from rest_framework import generics, mixins
-from chat.models import ChatSpace, Message, Profile
-from chat.serializers import ChatSpaceSerializer, MessageSerializer, ChatSpaceRetrivSerializer, ProfileSerializer
+from chat.models import ChatSpace, Message, Profile, Group
+from chat.serializers import ChatSpaceSerializer, MessageSerializer, ChatSpaceRetrivSerializer, ProfileSerializer, \
+    ProfileDetailSerializer, GroupSerializer
 
 
 # Create your views here.
@@ -15,6 +16,7 @@ class ChatSpaceList(generics.ListAPIView):
 class ChatSpaceDetail(generics.RetrieveAPIView):
     queryset = ChatSpace.objects.all()
     serializer_class = ChatSpaceRetrivSerializer
+    lookup_field = 'pk'
 
 
 class CreateChatSpaceView(generics.CreateAPIView):
@@ -61,3 +63,15 @@ class CreateProfileView(generics.GenericAPIView, mixins.CreateModelMixin, mixins
     def update(self, request, *args, **kwargs):
         kwargs['partial'] = True
         return self.update(self, request, *args, **kwargs)
+
+
+class RetrieveProfileView(generics.RetrieveAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileDetailSerializer
+    lookup_field = 'user_id'
+
+
+class GroupsView(generics.ListAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    lookup_field = 'pk'
