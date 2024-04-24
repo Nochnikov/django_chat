@@ -71,7 +71,19 @@ class RetrieveProfileView(generics.RetrieveAPIView):
     lookup_field = 'user_id'
 
 
-class GroupsView(generics.ListAPIView):
+class GroupsListView(generics.ListAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    lookup_field = 'pk'
+
+
+class GroupsDetailView(generics.RetrieveAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    lookup_field = 'pk'
+
+
+class CreateGroupView(generics.CreateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     lookup_field = 'pk'

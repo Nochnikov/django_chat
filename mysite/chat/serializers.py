@@ -45,4 +45,6 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
-        fields = ('group_name', 'group_description', 'users')
+        fields = ('id', 'group_name', 'group_description')
+
+
