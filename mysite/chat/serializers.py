@@ -16,12 +16,6 @@ class MessageSerializer(serializers.ModelSerializer):
         fields = ('user', 'chat', 'message_text')
 
 
-class LastMessageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Message
-        fields = 'last_message'
-
-
 class ChatSpaceRetrivSerializer(serializers.ModelSerializer):
     # message = LastMessageSerializer(read_only=True)
 
@@ -42,9 +36,16 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'is_premium', 'is_active', 'is_stuff')
+
+
 class GroupSerializer(serializers.ModelSerializer):
+
+    users = UserSerializer(many=True, read_only=True)
+
     class Meta:
         model = Group
-        fields = ('id', 'group_name', 'group_description')
-
-
+        fields = ('id', 'group_name', 'group_description', "users")

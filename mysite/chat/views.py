@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from rest_framework import generics, mixins
+
+from chat.filters import GroupFilter
 from chat.models import ChatSpace, Message, Profile, Group
 from chat.serializers import ChatSpaceSerializer, MessageSerializer, ChatSpaceRetrivSerializer, ProfileSerializer, \
     ProfileDetailSerializer, GroupSerializer
-
+from django_filters import rest_framework as filters
 
 # Create your views here.
 
@@ -72,12 +74,15 @@ class RetrieveProfileView(generics.RetrieveAPIView):
 
 
 class GroupsListView(generics.ListAPIView):
+    filterset_class = GroupFilter
+
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     lookup_field = 'pk'
 
 
 class GroupsDetailView(generics.RetrieveAPIView):
+
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     lookup_field = 'pk'
@@ -87,3 +92,4 @@ class CreateGroupView(generics.CreateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     lookup_field = 'pk'
+
