@@ -1,6 +1,6 @@
 from django.urls import path
 from chat.views import CreateChatSpaceView, ChatSpaceList, CreateUpdateGetDeleteMessageView, ChatSpaceDetail, \
-    CreateProfileView, RetrieveProfileView, GroupsListView, CreateGroupView, GroupsDetailView
+    CreateProfileView, RetrieveProfileView, GroupsListView, CreateGroupView, GroupsDetailView, JoinGroupView
 
 urlpatterns = [
     path('new_chat/', CreateChatSpaceView.as_view(), name='chat'),
@@ -11,5 +11,6 @@ urlpatterns = [
     path('profile/update/<int:user_id>/', CreateProfileView.as_view(), name='edit_profile'),
     path('groups/create/', CreateGroupView.as_view(), name='create_group'),
     path('groups/', GroupsListView.as_view(), name='list_group'),
-    path('groups/<int:pk>/', GroupsDetailView.as_view(), name='group_info')
+    path('groups/<int:pk>/', GroupsDetailView.as_view(), name='group_info'),
+    path('groups/<int:pk>/join/', JoinGroupView.as_view(), name='group_join'),
 ]

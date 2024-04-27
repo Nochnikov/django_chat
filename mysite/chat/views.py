@@ -1,11 +1,14 @@
+import rest_framework.views
 from django.shortcuts import render
-from rest_framework import generics, mixins
+from rest_framework import generics, mixins, permissions
+from rest_framework.response import Response
 
 from chat.filters import GroupFilter
 from chat.models import ChatSpace, Message, Profile, Group
 from chat.serializers import ChatSpaceSerializer, MessageSerializer, ChatSpaceRetrivSerializer, ProfileSerializer, \
     ProfileDetailSerializer, GroupSerializer
 from django_filters import rest_framework as filters
+
 
 # Create your views here.
 
@@ -73,6 +76,12 @@ class RetrieveProfileView(generics.RetrieveAPIView):
     lookup_field = 'user_id'
 
 
+class CreateGroupView(generics.CreateAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    lookup_field = 'pk'
+
+
 class GroupsListView(generics.ListAPIView):
     filterset_class = GroupFilter
 
@@ -82,14 +91,18 @@ class GroupsListView(generics.ListAPIView):
 
 
 class GroupsDetailView(generics.RetrieveAPIView):
-
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     lookup_field = 'pk'
 
 
-class CreateGroupView(generics.CreateAPIView):
+class JoinGroupView(rest_framework.views.APIView):
     queryset = Group.objects.all()
-    serializer_class = GroupSerializer
     lookup_field = 'pk'
 
+    permission_classes = [permissions.DjangoModelPermissions]
+
+    def post(self, request, *args, **kwargs):
+        group_id = kwargs.get('pk')
+        request.user.group_set.add(group_id)
+        return Response({'success joint': 'True'})

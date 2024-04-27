@@ -28,7 +28,6 @@ class Profile(models.Model):
     has_avatar = models.ImageField(upload_to='images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-
 class Message(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='message')
     chat = models.ForeignKey(ChatSpace, on_delete=models.CASCADE, related_name='chat')
@@ -41,9 +40,6 @@ class Message(models.Model):
     def is_updated(self):
         return self.sent_at != self.updated_at
 
-    # @property
-    # def last_message(self):
-    #     return f"{self.message_text[:10]}"
 
 
 class Group(models.Model):
