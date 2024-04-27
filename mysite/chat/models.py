@@ -11,11 +11,11 @@ class ChatSpace(models.Model):
         (PRIVATE, 'Private'),
         (PUBLIC, 'Group'),
     )
-
     chat_name = models.CharField(null=True, blank=True, max_length=50)
     created_at = models.DateTimeField(auto_now=True)
     chat_type = models.CharField(choices=CHAT_TYPE, null=False)
     is_super_group = models.BooleanField(default=False)
+
 
     def __str__(self):
         return f"{self.chat_name}, chat type: {self.chat_type}, super group: {self.is_super_group}"
@@ -27,7 +27,6 @@ class Profile(models.Model):
     last_name = models.CharField(max_length=15, null=True)
     has_avatar = models.ImageField(upload_to='images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
 
 class Message(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='message')
@@ -41,13 +40,10 @@ class Message(models.Model):
     def is_updated(self):
         return self.sent_at != self.updated_at
 
-    # @property
-    # def last_message(self):
-    #     return f"{self.message_text[:10]}"
 
 
 class Group(models.Model):
     group_name = models.CharField(max_length=50, null=False)
     group_description = models.CharField(null=True)
 
-    subscriptions = models.ManyToManyField(get_user_model())
+    users = models.ManyToManyField(get_user_model())
