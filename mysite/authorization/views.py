@@ -32,7 +32,6 @@ class LogoutView(generics.GenericAPIView):
 class ResetPasswordView(generics.UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = ResetPassWordSerializer
-    lookup_field = 'pk'
 
     def patch(self, request, *args, **kwargs):
         request.data['password'] = make_password(request.data['password'])

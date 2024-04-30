@@ -1,6 +1,6 @@
 import rest_framework.views
 from django.shortcuts import render
-from rest_framework import generics, mixins, permissions
+from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
 
 from chat.filters import GroupFilter
@@ -32,7 +32,8 @@ class CreateChatSpaceView(generics.CreateAPIView):
 
         if chat_name == "":
             chat_name = "Private conversation"
-        serializer.save(chat_name=chat_name)
+
+        serializer.save(chat_name=chat_name, user=self.request.user)
 
 
 class CreateUpdateGetDeleteMessageView(
@@ -68,6 +69,11 @@ class CreateProfileView(generics.GenericAPIView, mixins.CreateModelMixin, mixins
     def update(self, request, *args, **kwargs):
         kwargs['partial'] = True
         return self.update(self, request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+
+        serializer.save(user_id=self.request.user_id)
+
 
 
 class RetrieveProfileView(generics.RetrieveAPIView):

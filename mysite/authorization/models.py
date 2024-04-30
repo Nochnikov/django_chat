@@ -2,7 +2,6 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from authorization.managers import UserManager
-from chat.models import ChatSpace
 
 
 # Create your models here.
@@ -23,10 +22,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_premium = models.BooleanField(default=False)
 
-    chats = models.ManyToManyField(ChatSpace)
     friends = models.ManyToManyField("User")
 
     objects = UserManager()
 
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = []
+
