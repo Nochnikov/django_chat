@@ -1,13 +1,25 @@
 from rest_framework import serializers
 
 from authorization.models import User
-from chat.models import ChatSpace, Message, Profile, Group
+from chat.models import Message, Profile, Group, PrivateChat, PublicChat
+
+
+class PublicChatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PublicChat
+        fields = ['chat_name', 'chat_description', 'users']
+
+
+class PrivateChatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrivateChat
+        fields = "__all__"
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'is_premium', 'is_active')
+        fields = ('pk', 'username', 'is_premium', 'is_active')
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -22,13 +34,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ['username']
 
 
-class ChatSpaceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ChatSpace
-        fields = ['chat_name', 'chat_type', 'users']
-
-
 class MessageSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
     class Meta:
         model = Message
         fields = ('user', 'chat', 'message_text')
@@ -40,13 +48,6 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ('user_id', 'user_info', 'first_name', 'last_name', 'created_at')
-
-
-class ChatSpaceRetrivSerializer(serializers.ModelSerializer):
-    # message = LastMessageSerializer(read_only=True)
-    class Meta:
-        model = ChatSpace
-        fields = ("chat_name", "chat_type", 'created_at', 'users')
 
 
 class GroupSerializer(serializers.ModelSerializer):

@@ -17,7 +17,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ('username', 'password', 'role')
 
 
-class ResetPassWordSerializer(serializers.ModelSerializer):
+class ChangePasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     class Meta:
