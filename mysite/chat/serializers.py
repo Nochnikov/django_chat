@@ -7,7 +7,7 @@ from chat.models import Message, Profile, Group, PrivateChat, PublicChat
 class PublicChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = PublicChat
-        fields = ['chat_name', 'chat_description', 'users']
+        fields = ['pk', 'chat_name', 'chat_description', 'users']
 
 
 class PrivateChatSerializer(serializers.ModelSerializer):
@@ -34,12 +34,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ['username']
 
 
-class MessageSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
-
+class PrivateMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ('user', 'chat', 'message_text')
+        fields = ('user', 'private_chat', 'message_text')
+        read_only_fields = ['user', 'private_chat']
+
+
+class PublicMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = ('user', 'public_chat', 'message_text')
+        read_only_fields = ['user', 'public_chat']
 
 
 class ProfileDetailSerializer(serializers.ModelSerializer):
