@@ -44,6 +44,17 @@ from django_filters import rest_framework as filters
 #
 #         serializer.save(chat_name=chat_name, user=self.request.user)
 
+class DeleteUpdatePublicChatView(generics.GenericAPIView, mixins.DestroyModelMixin, mixins.UpdateModelMixin):
+    queryset = PublicChat.objects.all()
+    serializer_class = PublicChatSerializer
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+
 class ListCreatePublicChat(generics.ListCreateAPIView):
     queryset = PublicChat.objects.all()
     serializer_class = PublicChatSerializer
@@ -61,6 +72,11 @@ class ListCreatePublicChat(generics.ListCreateAPIView):
         users.append(user)
 
         serializer.save(owner=self.request.user)
+
+
+class DeletePrivateChatView(generics.DestroyAPIView):
+    queryset = PrivateChat.objects.all()
+    serializer_class = PrivateChatSerializer
 
 
 class ListCreatePrivateChat(generics.ListCreateAPIView):
@@ -91,7 +107,11 @@ class ChatListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        qs = PublicChat.objects.all().filter(users=user)
+        private_chats = PrivateChat.objects.filter(users=user)
+        public_chats = PublicChat.objects.filter(users=user)
+
+        qs = list(private_chats) + list(public_chats)
+
         return qs
 
     def perform_create(self, serializer):
@@ -120,7 +140,7 @@ class CreateUpdateGetDeleteMessageView(
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
-        return self.delete(request, *args, **kwargs)
+        return self.destroy(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
