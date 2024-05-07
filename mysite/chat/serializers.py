@@ -1,25 +1,31 @@
 from rest_framework import serializers
 
 from authorization.models import User
-from chat.models import ChatSpace, Message, Profile, Group
+from chat.models import Message, Profile, Group, PrivateChat, PublicChat
 
 
-class ChatSpaceSerializer(serializers.ModelSerializer):
+class PublicChatSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ChatSpace
-        fields = ['chat_name', 'chat_type']
+        model = PublicChat
+        fields = ['pk', 'chat_name', 'chat_description', 'users']
 
 
-class MessageSerializer(serializers.ModelSerializer):
+class PrivateChatSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Message
-        fields = ('user', 'chat', 'message_text')
+        model = PrivateChat
+        fields = "__all__"
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'is_premium', 'is_active')
+        fields = ('pk', 'username', 'is_premium', 'is_active')
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ('user', 'first_name', 'last_name')
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -28,18 +34,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ['username']
 
 
-class ChatSpaceRetrivSerializer(serializers.ModelSerializer):
-    # message = LastMessageSerializer(read_only=True)
-
+class PrivateMessageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ChatSpace
-        fields = ("chat_name", "chat_type", 'created_at')
+        model = Message
+        fields = ('user', 'private_chat', 'message_text')
+        read_only_fields = ['user', 'private_chat']
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class PublicMessageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Profile
-        fields = ('user', 'first_name', 'last_name')
+        model = Message
+        fields = ('user', 'public_chat', 'message_text')
+        read_only_fields = ['user', 'public_chat']
 
 
 class ProfileDetailSerializer(serializers.ModelSerializer):

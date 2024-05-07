@@ -1,48 +1,133 @@
 import rest_framework.views
 from django.shortcuts import render
-from rest_framework import generics, mixins, permissions
+from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
 
-from chat.filters import GroupFilter
-from chat.models import ChatSpace, Message, Profile, Group
-from chat.serializers import ChatSpaceSerializer, MessageSerializer, ChatSpaceRetrivSerializer, ProfileSerializer, \
-    ProfileDetailSerializer, GroupSerializer
+from chat.filters import GroupFilter, MessageFilter
+from chat.models import Message, Profile, Group, PrivateChat, PublicChat
+from chat.serializers import PrivateMessageSerializer, ProfileSerializer, \
+    ProfileDetailSerializer, GroupSerializer, PrivateChatSerializer, PublicChatSerializer, PublicMessageSerializer
 from django_filters import rest_framework as filters
 
 
 # Create your views here.
 
 
-class ChatSpaceList(generics.ListAPIView):
-    queryset = ChatSpace.objects.all()
-    serializer_class = ChatSpaceSerializer
+# class ChatSpaceList(generics.ListAPIView):
+#     queryset = ChatSpace.objects.all()
+#     serializer_class = ChatSpaceSerializer
+#
+#     filter_class = ChatSpaceFilter
+#
+#     def get_queryset(self):
+#         qs = ChatSpace.objects.all().filter(users=self.request.user)
+#         return qs
+#
+#     def perform_create(self, serializer):
+#         serializer.save(user=self.request.user)
 
 
-class ChatSpaceDetail(generics.RetrieveAPIView):
-    queryset = ChatSpace.objects.all()
-    serializer_class = ChatSpaceRetrivSerializer
-    lookup_field = 'pk'
+# class ChatSpaceDetail(generics.RetrieveAPIView):
+#     queryset = ChatSpace.objects.all()
+#     serializer_class = ChatSpaceRetrivSerializer
+#     lookup_field = 'pk'
 
 
-class CreateChatSpaceView(generics.CreateAPIView):
-    serializer_class = ChatSpaceSerializer
+# class CreateChatSpaceView(generics.CreateAPIView):
+#     serializer_class = ChatSpaceSerializer
+#
+#     def perform_create(self, serializer):
+#         chat_name = serializer.validated_data['chat_name']
+#
+#         if chat_name == "":
+#             chat_name = "Private conversation"
+#
+#         serializer.save(chat_name=chat_name, user=self.request.user)
+
+class DeleteUpdatePublicChatView(generics.GenericAPIView, mixins.DestroyModelMixin, mixins.UpdateModelMixin):
+    queryset = PublicChat.objects.all()
+    serializer_class = PublicChatSerializer
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+
+class ListCreatePublicChat(generics.ListCreateAPIView):
+    queryset = PublicChat.objects.all()
+    serializer_class = PublicChatSerializer
+
+    def get_queryset(self):
+        qs = PublicChat.objects.all().filter(users=self.request.user.pk)
+        return qs
 
     def perform_create(self, serializer):
-        chat_name = serializer.validated_data['chat_name']
+        user = self.request.user
+        users = serializer.validated_data.get("users")
 
-        if chat_name == "":
-            chat_name = "Private conversation"
-        serializer.save(chat_name=chat_name)
+        if user in users:
+            users.remove(user)
+        users.append(user)
+
+        serializer.save(owner=self.request.user)
 
 
-class CreateUpdateGetDeleteMessageView(
+class DeletePrivateChatView(generics.DestroyAPIView):
+    queryset = PrivateChat.objects.all()
+    serializer_class = PrivateChatSerializer
+
+
+class ListCreatePrivateChat(generics.ListCreateAPIView):
+    queryset = PrivateChat.objects.all()
+    serializer_class = PrivateChatSerializer
+
+    def get_queryset(self):
+        qs = PrivateChat.objects.all().filter(users=self.request.user)
+        return qs
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        users = serializer.validated_data.get('users')
+
+        if user in users:
+            users.remove(user)
+        users.append(user)
+
+        if len(users) != 2:
+            return Response({'error': 'Private chat must contain exactly 2 users'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+
+
+class ChatListView(generics.ListAPIView):
+    queryset = PrivateChat.objects.all()
+    serializer_class = PrivateChatSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        private_chats = PrivateChat.objects.filter(users=user)
+        public_chats = PublicChat.objects.filter(users=user)
+
+        qs = list(private_chats) + list(public_chats)
+
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(users=self.request.user)
+
+
+class CreateUpdateGetDeletePublicMessageView(
     generics.GenericAPIView,
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.ListModelMixin,
     mixins.DestroyModelMixin):
     queryset = Message.objects.all()
-    serializer_class = MessageSerializer
+    serializer_class = PublicMessageSerializer
+    lookup_field = 'pk'
+    filter_class = MessageFilter
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -50,24 +135,77 @@ class CreateUpdateGetDeleteMessageView(
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
 
-    def update(self, request, *args, **kwargs):
-        kwargs['partial'] = True
-        return self.update(request, *args, **kwargs)
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
-        return self.delete(request, *args, **kwargs)
+        return self.destroy(request, *args, **kwargs)
+
+    # def get_queryset(self):
+    #     public_chat = self.kwargs.get('public_chat_id')
+    #
+    #     if public_chat:
+    #         return self.queryset.filter(public_chat_id=public_chat)
+    #     return self.queryset.none()
+
+    def perform_create(self, serializer):
+        public_chat = self.kwargs.get('public_chat_id')
+
+        serializer.save(user=self.request.user, public_chat_id=public_chat)
 
 
-class CreateProfileView(generics.GenericAPIView, mixins.CreateModelMixin, mixins.UpdateModelMixin):
-    serializer_class = ProfileSerializer
-    queryset = Profile.objects.all()
+class CreateUpdateGetDeletePrivateMessageView(
+    generics.GenericAPIView,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin):
+    queryset = Message.objects.all()
+    serializer_class = PrivateMessageSerializer
+    lookup_field = 'pk'
+    filter_class = MessageFilter
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
 
-    def update(self, request, *args, **kwargs):
-        kwargs['partial'] = True
-        return self.update(self, request, *args, **kwargs)
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+    # def get_queryset(self):
+    #     private_chat = self.kwargs.get('private_chat_id')
+    #
+    #     if private_chat:
+    #         return self.queryset.filter(private_chat_id=private_chat)
+    #     return self.queryset.none()
+
+    def perform_create(self, serializer):
+        private_chat = self.kwargs.get('private_chat_id')
+
+        serializer.save(user=self.request.user, private_chat_id=private_chat)
+
+
+class CreateProfileView(generics.GenericAPIView, mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+    serializer_class = ProfileSerializer
+    queryset = Profile.objects.all()
+    lookup_field = 'user_id'
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class RetrieveProfileView(generics.RetrieveAPIView):
