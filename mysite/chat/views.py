@@ -1,13 +1,14 @@
 import rest_framework.views
 from django.shortcuts import render
 from rest_framework import generics, mixins, permissions, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from chat.filters import GroupFilter, MessageFilter
 from chat.models import Message, Profile, Group, PrivateChat, PublicChat
 from chat.serializers import PrivateMessageSerializer, ProfileSerializer, \
-    ProfileDetailSerializer, GroupSerializer, PrivateChatSerializer, PublicChatSerializer, PublicMessageSerializer
-from django_filters import rest_framework as filters
+    ProfileDetailSerializer, GroupSerializer, PrivateChatSerializer, PublicChatSerializer, PublicMessageSerializer, \
+    ChatSerializer
 
 
 # Create your views here.
@@ -43,6 +44,7 @@ from django_filters import rest_framework as filters
 #             chat_name = "Private conversation"
 #
 #         serializer.save(chat_name=chat_name, user=self.request.user)
+
 
 class DeleteUpdatePublicChatView(generics.GenericAPIView, mixins.DestroyModelMixin, mixins.UpdateModelMixin):
     queryset = PublicChat.objects.all()
@@ -96,14 +98,14 @@ class ListCreatePrivateChat(generics.ListCreateAPIView):
         users.append(user)
 
         if len(users) != 2:
-            return Response({'error': 'Private chat must contain exactly 2 users'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidationError("Chat have to contain exactly two users")
 
         serializer.save()
 
 
 class ChatListView(generics.ListAPIView):
     queryset = PrivateChat.objects.all()
-    serializer_class = PrivateChatSerializer
+    serializer_class = ChatSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -113,9 +115,6 @@ class ChatListView(generics.ListAPIView):
         qs = list(private_chats) + list(public_chats)
 
         return qs
-
-    def perform_create(self, serializer):
-        serializer.save(users=self.request.user)
 
 
 class CreateUpdateGetDeletePublicMessageView(
@@ -190,13 +189,10 @@ class CreateUpdateGetDeletePrivateMessageView(
         serializer.save(user=self.request.user, private_chat_id=private_chat)
 
 
-class CreateProfileView(generics.GenericAPIView, mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+class CurrentUserProfileView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
+                        mixins.DestroyModelMixin):
     serializer_class = ProfileSerializer
     queryset = Profile.objects.all()
-    lookup_field = 'user_id'
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
 
     def patch(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
@@ -204,8 +200,9 @@ class CreateProfileView(generics.GenericAPIView, mixins.CreateModelMixin, mixins
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    def get_object(self):
+        instance = Profile.objects.get(user=self.request.user)
+        return instance
 
 
 class RetrieveProfileView(generics.RetrieveAPIView):

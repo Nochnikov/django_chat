@@ -15,6 +15,13 @@ class PrivateChatSerializer(serializers.ModelSerializer):
         model = PrivateChat
         fields = "__all__"
 
+class ChatSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    chat_name = serializers.CharField(read_only=True, allow_blank=True, required=False, allow_null=True)
+    users = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
+
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
