@@ -1,8 +1,9 @@
 from django.urls import path
-from chat.views import (CreateProfileView, RetrieveProfileView, GroupsListView, CreateGroupView, GroupsDetailView,
-                        JoinGroupView, ChatListView, ListCreatePrivateChat, ListCreatePublicChat, DeleteUpdatePublicChatView,
-                        DeletePrivateChatView, CreateUpdateGetDeletePrivateMessageView, CreateUpdateGetDeletePublicMessageView, )
-
+from chat.views import (RetrieveProfileView, GroupsListView, CreateGroupView, GroupsDetailView,
+                        FollowGroupView, ChatListView, ListCreatePrivateChat, ListCreatePublicChat,
+                        DeleteUpdatePublicChatView,
+                        DeletePrivateChatView, CreateUpdateGetDeletePrivateMessageView,
+                        CreateUpdateGetDeletePublicMessageView, CurrentUserProfileView, UnfollowGroupView, )
 urlpatterns = [
     path('', ChatListView.as_view(), name='chat-list'),
     path('private/', ListCreatePrivateChat.as_view(), name='chat-private'),
@@ -15,12 +16,16 @@ urlpatterns = [
     path('public/<int:public_chat_id>/messages/', CreateUpdateGetDeletePublicMessageView.as_view(), name='chat-public-messages' ),
     path('public/<int:public_chat_id>/messages/<int:pk>/', CreateUpdateGetDeletePublicMessageView.as_view(), name='chat-public-messages-delete-update' ),
 
-    path('profile/<int:user_id>/', RetrieveProfileView.as_view(), name='profile'),
-    path('profile/update/<int:user_id>/', CreateProfileView.as_view(), name='edit_profile'),
 
-    path('groups/create/', CreateGroupView.as_view(), name='create_group'),
+    path('profile/me/', CurrentUserProfileView.as_view(), name='profile'),
+    path('profile/<int:user_id>/', RetrieveProfileView.as_view(), name='profile_others'),
+
     path('groups/', GroupsListView.as_view(), name='list_group'),
+    path('groups/create/', CreateGroupView.as_view(), name='create_group'),
     path('groups/<int:pk>/', GroupsDetailView.as_view(), name='group_info'),
-    path('groups/<int:pk>/join/', JoinGroupView.as_view(), name='group_join'),
+    path('groups/<int:pk>/subscribe/', FollowGroupView.as_view(), name='group_join'),
+    path('groups/<int:pk>/unsubsribe/', UnfollowGroupView.as_view(), name='group_unjoin'),
+
 
 ]
+

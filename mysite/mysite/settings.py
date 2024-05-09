@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 from datetime import timedelta
 from pathlib import Path
+from dotenv import load_dotenv
+from os import getenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -79,12 +81,20 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+
+load_dotenv(dotenv_path=r'C:\Users\Nurdaulet.DESKTOP-KDILCUN\PycharmProjects\chat_django-project\mysite\env_files\.env')
+
+NAME = getenv('NAME')
+USER = getenv('USER')
+PASSWORD = getenv('PASSWORD')
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'final_project',
-        'USER': 'postgres',
-        'PASSWORD': 'RockIsdead123',
+        'NAME': NAME,
+        'USER': USER,
+        'PASSWORD': PASSWORD,
         'HOST': '127.0.0.1',
         "PORT": 5432
     }

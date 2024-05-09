@@ -15,9 +15,7 @@ class RegistrationView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
     def create(self, request, *args, **kwargs):
-        # request.data._mutable = True
         request.data['password'] = make_password(request.data['password'])
-        # request.data._mutable = False
         return super().create(request, *args, **kwargs)
 
 
@@ -39,3 +37,4 @@ class ChangePasswordView(generics.UpdateAPIView):
 
     def get_object(self):
         return self.request.user
+

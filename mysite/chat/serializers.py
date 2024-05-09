@@ -15,6 +15,13 @@ class PrivateChatSerializer(serializers.ModelSerializer):
         model = PrivateChat
         fields = "__all__"
 
+class ChatSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    chat_name = serializers.CharField(read_only=True, allow_blank=True, required=False, allow_null=True)
+    users = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
+
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,7 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ('user', 'first_name', 'last_name')
+        fields = ('user', "avatar", 'first_name', 'last_name')
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -61,4 +68,5 @@ class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Group
-        fields = ('id', 'group_name', 'group_description', "users")
+        fields = ('id', 'group_name', "owner", 'group_description', "users")
+        read_only_fields = ['owner']
