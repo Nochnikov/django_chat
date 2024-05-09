@@ -11,12 +11,6 @@ class GroupFilter(filters.FilterSet):
         fields = {'users': ['exact', 'icontains']}
 
 
-# class ChatSpaceFilter(filters.FilterSet):
-#     class Meta:
-#         model = ChatSpace
-#         fields = {'users': ['exact']}
-
-
 class MessageFilter(filters.FilterSet):
 
     id = filters.CharFilter('message__user_id', lookup_expr='exact')

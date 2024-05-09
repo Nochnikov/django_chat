@@ -32,7 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ('user', 'first_name', 'last_name')
+        fields = ('user', "avatar", 'first_name', 'last_name')
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -68,4 +68,5 @@ class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Group
-        fields = ('id', 'group_name', 'group_description', "users")
+        fields = ('id', 'group_name', "owner", 'group_description', "users")
+        read_only_fields = ['owner']

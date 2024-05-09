@@ -140,13 +140,6 @@ class CreateUpdateGetDeletePublicMessageView(
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
-    # def get_queryset(self):
-    #     public_chat = self.kwargs.get('public_chat_id')
-    #
-    #     if public_chat:
-    #         return self.queryset.filter(public_chat_id=public_chat)
-    #     return self.queryset.none()
-
     def perform_create(self, serializer):
         public_chat = self.kwargs.get('public_chat_id')
 
@@ -176,23 +169,21 @@ class CreateUpdateGetDeletePrivateMessageView(
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
-    # def get_queryset(self):
-    #     private_chat = self.kwargs.get('private_chat_id')
-    #
-    #     if private_chat:
-    #         return self.queryset.filter(private_chat_id=private_chat)
-    #     return self.queryset.none()
-
     def perform_create(self, serializer):
         private_chat = self.kwargs.get('private_chat_id')
 
         serializer.save(user=self.request.user, private_chat_id=private_chat)
 
 
-class CurrentUserProfileView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
-                        mixins.DestroyModelMixin):
-    serializer_class = ProfileSerializer
+class CurrentUserProfileView(generics.GenericAPIView,
+                             mixins.UpdateModelMixin,
+                             mixins.DestroyModelMixin,
+                             mixins.CreateModelMixin):
     queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
 
     def patch(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
@@ -216,6 +207,9 @@ class CreateGroupView(generics.CreateAPIView):
     serializer_class = GroupSerializer
     lookup_field = 'pk'
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
 
 class GroupsListView(generics.ListAPIView):
     filterset_class = GroupFilter
@@ -230,14 +224,25 @@ class GroupsDetailView(generics.RetrieveAPIView):
     serializer_class = GroupSerializer
     lookup_field = 'pk'
 
-
-class JoinGroupView(rest_framework.views.APIView):
+class FollowGroupView(rest_framework.views.APIView):
     queryset = Group.objects.all()
     lookup_field = 'pk'
 
-    permission_classes = [permissions.DjangoModelPermissions]
+    # permission_classes = [permissions.DjangoModelPermissions]
 
     def post(self, request, *args, **kwargs):
         group_id = kwargs.get('pk')
         request.user.group_set.add(group_id)
-        return Response({'success joint': 'True'})
+        return Response({'success followed': 'True'})
+
+
+class UnfollowGroupView(rest_framework.views.APIView):
+    queryset = Group.objects.all()
+    lookup_field = 'pk'
+
+    http_method_names = ['delete']
+
+    def delete(self, request, *args, **kwargs):
+        group_id = kwargs.get('pk')
+        request.user.group_set.remove(group_id)
+        return Response({'success unfollowed': 'True'})
