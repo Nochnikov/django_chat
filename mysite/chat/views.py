@@ -2,7 +2,7 @@ import rest_framework.views
 from rest_framework import generics, mixins, permissions
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
-from chat.permissions import ReadDjangoModelPermissionsWithRead, IsChatMember
+from chat.permissions import DjangoModelPermissionsWithRead, IsChatMember
 from chat.filters import GroupFilter, MessageFilter
 from chat.models import Message, Profile, Group, PrivateChat, PublicChat
 from chat.serializers import PrivateMessageSerializer, ProfileSerializer, \
@@ -184,7 +184,7 @@ class CreateUpdateGetDeletePrivateMessageView(
 class CurrentUserProfileView(generics.GenericAPIView,
                              mixins.UpdateModelMixin,
                              mixins.DestroyModelMixin,
-                             mixins.CreateModelMixin):
+                             mixins.RetrieveModelMixin):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
 
@@ -230,7 +230,7 @@ class GroupsListView(generics.ListAPIView):
     serializer_class = GroupSerializer
     lookup_field = 'pk'
 
-    permission_classes = [ReadDjangoModelPermissionsWithRead]
+    permission_classes = [DjangoModelPermissionsWithRead]
 
 
 class GroupsDetailView(generics.RetrieveAPIView):

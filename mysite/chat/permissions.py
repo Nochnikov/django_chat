@@ -2,7 +2,7 @@ from rest_framework import permissions
 from rest_framework.exceptions import PermissionDenied
 
 
-class ReadDjangoModelPermissionsWithRead(permissions.DjangoModelPermissions):
+class DjangoModelPermissionsWithRead(permissions.DjangoModelPermissions):
     perms_map = {
         'GET': ['%(app_label)s.view_%(model_name)s'],
         'OPTIONS': [],
