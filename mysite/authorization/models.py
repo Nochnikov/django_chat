@@ -22,8 +22,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_premium = models.BooleanField(default=False)
 
-    friends = models.ManyToManyField("User")
-
     objects = UserManager()
 
     USERNAME_FIELD = "username"
