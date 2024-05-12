@@ -1,10 +1,7 @@
-from django.contrib.auth import logout
 from django.contrib.auth.hashers import make_password
-from rest_framework.response import Response
-from rest_framework import generics, status
-
+from rest_framework import generics
 from authorization.models import User
-from authorization.serializers import LoginSerializer, RegisterSerializer, ChangePasswordSerializer
+from authorization.serializers import RegisterSerializer, ChangePasswordSerializer
 
 
 # Create your views here.
@@ -19,14 +16,6 @@ class RegistrationView(generics.CreateAPIView):
         return super().create(request, *args, **kwargs)
 
 
-class LogoutView(generics.GenericAPIView):
-    serializer_class = LoginSerializer
-
-    def get(self, request):
-        logout(request)
-        return Response({"detail": "Successfully logged out"})
-
-
 class ChangePasswordView(generics.UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = ChangePasswordSerializer
@@ -37,4 +26,3 @@ class ChangePasswordView(generics.UpdateAPIView):
 
     def get_object(self):
         return self.request.user
-
