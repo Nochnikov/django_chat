@@ -1,7 +1,7 @@
 from django.contrib.auth import logout
 from django.contrib.auth.hashers import make_password
 from rest_framework.response import Response
-from rest_framework import generics, status
+from rest_framework import generics
 
 from authorization.models import User
 from authorization.serializers import LoginSerializer, RegisterSerializer, ChangePasswordSerializer
@@ -37,4 +37,3 @@ class ChangePasswordView(generics.UpdateAPIView):
 
     def get_object(self):
         return self.request.user
-

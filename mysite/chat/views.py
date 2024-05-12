@@ -1,9 +1,8 @@
 import rest_framework.views
-from django.shortcuts import render
-from rest_framework import generics, mixins, permissions, status
-from rest_framework.exceptions import ValidationError
+from rest_framework import generics, mixins, permissions
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
-
+from chat.permissions import ReadDjangoModelPermissionsWithRead, IsChatMember
 from chat.filters import GroupFilter, MessageFilter
 from chat.models import Message, Profile, Group, PrivateChat, PublicChat
 from chat.serializers import PrivateMessageSerializer, ProfileSerializer, \
@@ -13,42 +12,11 @@ from chat.serializers import PrivateMessageSerializer, ProfileSerializer, \
 
 # Create your views here.
 
-
-# class ChatSpaceList(generics.ListAPIView):
-#     queryset = ChatSpace.objects.all()
-#     serializer_class = ChatSpaceSerializer
-#
-#     filter_class = ChatSpaceFilter
-#
-#     def get_queryset(self):
-#         qs = ChatSpace.objects.all().filter(users=self.request.user)
-#         return qs
-#
-#     def perform_create(self, serializer):
-#         serializer.save(user=self.request.user)
-
-
-# class ChatSpaceDetail(generics.RetrieveAPIView):
-#     queryset = ChatSpace.objects.all()
-#     serializer_class = ChatSpaceRetrivSerializer
-#     lookup_field = 'pk'
-
-
-# class CreateChatSpaceView(generics.CreateAPIView):
-#     serializer_class = ChatSpaceSerializer
-#
-#     def perform_create(self, serializer):
-#         chat_name = serializer.validated_data['chat_name']
-#
-#         if chat_name == "":
-#             chat_name = "Private conversation"
-#
-#         serializer.save(chat_name=chat_name, user=self.request.user)
-
-
 class DeleteUpdatePublicChatView(generics.GenericAPIView, mixins.DestroyModelMixin, mixins.UpdateModelMixin):
     queryset = PublicChat.objects.all()
     serializer_class = PublicChatSerializer
+
+    permission_classes = [permissions.DjangoModelPermissions]
 
     def patch(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
@@ -60,6 +28,8 @@ class DeleteUpdatePublicChatView(generics.GenericAPIView, mixins.DestroyModelMix
 class ListCreatePublicChat(generics.ListCreateAPIView):
     queryset = PublicChat.objects.all()
     serializer_class = PublicChatSerializer
+
+    permission_classes = [permissions.DjangoModelPermissions]
 
     def get_queryset(self):
         qs = PublicChat.objects.all().filter(users=self.request.user.pk)
@@ -79,11 +49,14 @@ class ListCreatePublicChat(generics.ListCreateAPIView):
 class DeletePrivateChatView(generics.DestroyAPIView):
     queryset = PrivateChat.objects.all()
     serializer_class = PrivateChatSerializer
+    permission_classes = [permissions.DjangoModelPermissions]
 
 
 class ListCreatePrivateChat(generics.ListCreateAPIView):
     queryset = PrivateChat.objects.all()
     serializer_class = PrivateChatSerializer
+
+    permission_classes = [permissions.DjangoModelPermissions]
 
     def get_queryset(self):
         qs = PrivateChat.objects.all().filter(users=self.request.user)
@@ -107,6 +80,8 @@ class ChatListView(generics.ListAPIView):
     queryset = PrivateChat.objects.all()
     serializer_class = ChatSerializer
 
+    permission_classes = [permissions.IsAuthenticated]
+
     def get_queryset(self):
         user = self.request.user
         private_chats = PrivateChat.objects.filter(users=user)
@@ -128,6 +103,8 @@ class CreateUpdateGetDeletePublicMessageView(
     lookup_field = 'pk'
     filter_class = MessageFilter
 
+    permission_classes = [IsChatMember]
+
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
@@ -139,6 +116,19 @@ class CreateUpdateGetDeletePublicMessageView(
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+
+    def get_queryset(self):
+        chat_id = self.kwargs.get('public_chat_id')
+
+        qs = Message.objects.filter(public_chat_id=chat_id).all()
+
+        public_chat = PublicChat.objects.get(pk=chat_id)
+
+        user = self.request.user
+
+        if user not in public_chat.users.all():
+            raise PermissionDenied("You do not have permission to perform this action")
+        return qs
 
     def perform_create(self, serializer):
         public_chat = self.kwargs.get('public_chat_id')
@@ -155,7 +145,9 @@ class CreateUpdateGetDeletePrivateMessageView(
     queryset = Message.objects.all()
     serializer_class = PrivateMessageSerializer
     lookup_field = 'pk'
-    filter_class = MessageFilter
+
+    permission_classes = [IsChatMember]
+
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -169,6 +161,20 @@ class CreateUpdateGetDeletePrivateMessageView(
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
+    def get_queryset(self):
+        chat_id = self.kwargs.get('private_chat_id')
+
+        user = self.request.user
+
+        qs = Message.objects.filter(private_chat_id=chat_id).all()
+
+        private_chat = PrivateChat.objects.get(pk=chat_id)
+
+        if user not in private_chat.users.all():
+            raise PermissionDenied("You do not have permission to perform this action.")
+
+        return qs
+
     def perform_create(self, serializer):
         private_chat = self.kwargs.get('private_chat_id')
 
@@ -181,6 +187,8 @@ class CurrentUserProfileView(generics.GenericAPIView,
                              mixins.CreateModelMixin):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
+
+    permission_classes = [permissions.DjangoModelPermissions]
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
@@ -201,11 +209,15 @@ class RetrieveProfileView(generics.RetrieveAPIView):
     serializer_class = ProfileDetailSerializer
     lookup_field = 'user_id'
 
+    permissions_classes = [permissions.DjangoModelPermissions]
+
 
 class CreateGroupView(generics.CreateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     lookup_field = 'pk'
+
+    permission_classes = [permissions.DjangoModelPermissions]
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -218,17 +230,19 @@ class GroupsListView(generics.ListAPIView):
     serializer_class = GroupSerializer
     lookup_field = 'pk'
 
+    permission_classes = [ReadDjangoModelPermissionsWithRead]
+
 
 class GroupsDetailView(generics.RetrieveAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     lookup_field = 'pk'
 
+
 class FollowGroupView(rest_framework.views.APIView):
     queryset = Group.objects.all()
     lookup_field = 'pk'
 
-    # permission_classes = [permissions.DjangoModelPermissions]
 
     def post(self, request, *args, **kwargs):
         group_id = kwargs.get('pk')
@@ -239,6 +253,8 @@ class FollowGroupView(rest_framework.views.APIView):
 class UnfollowGroupView(rest_framework.views.APIView):
     queryset = Group.objects.all()
     lookup_field = 'pk'
+
+    permission_classes = [permissions.DjangoModelPermissions]
 
     http_method_names = ['delete']
 
