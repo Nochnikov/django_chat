@@ -11,7 +11,14 @@ class GroupFilter(filters.FilterSet):
         fields = {'users': ['exact', 'icontains']}
 
 
+def message_contains(queryset, name, value):
+    look_up = f"{name}__icontains"
+    return queryset.filter(**{look_up: value})
+
+
 class MessageFilter(filters.FilterSet):
+    message_text = filters.CharFilter(field_name='message_text', method=message_contains)
 
-    id = filters.CharFilter('message__user_id', lookup_expr='exact')
-
+    class Meta:
+        model = Message
+        fields = {'message_text': ['exact', 'icontains']}

@@ -101,7 +101,7 @@ class CreateUpdateGetDeletePublicMessageView(
     queryset = Message.objects.all()
     serializer_class = PublicMessageSerializer
     lookup_field = 'pk'
-    filter_class = MessageFilter
+    filterset_class = MessageFilter
 
     permission_classes = [IsChatMember]
 
@@ -142,12 +142,13 @@ class CreateUpdateGetDeletePrivateMessageView(
     mixins.UpdateModelMixin,
     mixins.ListModelMixin,
     mixins.DestroyModelMixin):
+
     queryset = Message.objects.all()
     serializer_class = PrivateMessageSerializer
     lookup_field = 'pk'
+    filterset_class = MessageFilter
 
     permission_classes = [IsChatMember]
-
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
