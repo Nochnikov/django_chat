@@ -2,7 +2,7 @@ import rest_framework.views
 from rest_framework import generics, mixins, permissions
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
-from chat.permissions import DjangoModelPermissionsWithRead, IsChatMember
+from chat.permissions import DjangoModelPermissionsWithRead, IsChatMember, DjangoObjectPermissionsWithReadUpdate
 from chat.filters import GroupFilter, MessageFilter
 from chat.models import Message, Profile, Group, PrivateChat, PublicChat
 from chat.serializers import PrivateMessageSerializer, ProfileSerializer, \
@@ -142,7 +142,6 @@ class CreateUpdateGetDeletePrivateMessageView(
     mixins.UpdateModelMixin,
     mixins.ListModelMixin,
     mixins.DestroyModelMixin):
-
     queryset = Message.objects.all()
     serializer_class = PrivateMessageSerializer
     lookup_field = 'pk'
@@ -224,7 +223,7 @@ class CreateGroupView(generics.CreateAPIView):
         serializer.save(owner=self.request.user)
 
 
-class GroupsListView(generics.ListAPIView):
+class GroupsListView(generics.GenericAPIView, mixins.ListModelMixin, mixins.DestroyModelMixin, mixins.UpdateModelMixin):
     filterset_class = GroupFilter
 
     queryset = Group.objects.all()
@@ -234,16 +233,27 @@ class GroupsListView(generics.ListAPIView):
     permission_classes = [DjangoModelPermissionsWithRead]
 
 
-class GroupsDetailView(generics.RetrieveAPIView):
+class GroupsDetailView(generics.RetrieveUpdateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     lookup_field = 'pk'
+    permission_classes = [DjangoObjectPermissionsWithReadUpdate]
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+    def get_queryset(self):
+        group = self.kwargs.get('pk')
+        qs = Group.objects.all().filter(pk=group)
+        return qs
 
 
 class FollowGroupView(rest_framework.views.APIView):
     queryset = Group.objects.all()
     lookup_field = 'pk'
-
 
     def post(self, request, *args, **kwargs):
         group_id = kwargs.get('pk')

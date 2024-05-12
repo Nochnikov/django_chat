@@ -14,6 +14,16 @@ class DjangoModelPermissionsWithRead(permissions.DjangoModelPermissions):
     }
 
 
+class DjangoObjectPermissionsWithReadUpdate(permissions.DjangoObjectPermissions):
+    def has_object_permission(self, request, view, obj):
+        user = request.user.username
+
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        return user == obj.owner
+
+
 class IsChatMember(permissions.BasePermission):
 
     def has_permission(self, request, view):
