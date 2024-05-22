@@ -4,22 +4,6 @@ from django.db import models
 
 # Create your models here.
 
-# class ChatSpace(models.Model):
-#     PRIVATE, PUBLIC = 1, 2
-#
-#     CHAT_TYPE = (
-#         (PRIVATE, 'Private'),
-#         (PUBLIC, 'Group'),
-#     )
-#     chat_name = models.CharField(null=True, blank=True, max_length=50)
-#     created_at = models.DateTimeField(auto_now=True)
-#     chat_type = models.CharField(choices=CHAT_TYPE, null=False)
-#
-#     users = models.ManyToManyField(get_user_model(), related_name='chat_spaces')
-#
-#     def __str__(self):
-#         return f"{self.chat_name}, chat type: {self.chat_type}, super group: {self.is_super_group}"
-
 class PrivateChat(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     users = models.ManyToManyField(get_user_model(), related_name='private_chats')

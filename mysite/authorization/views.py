@@ -1,5 +1,5 @@
 from django.contrib.auth.hashers import make_password
-from rest_framework import generics
+from rest_framework import generics, permissions
 from authorization.models import User
 from authorization.serializers import RegisterSerializer, ChangePasswordSerializer
 
@@ -8,6 +8,9 @@ from authorization.serializers import RegisterSerializer, ChangePasswordSerializ
 
 
 class RegistrationView(generics.CreateAPIView):
+
+    permission_classes = [permissions.AllowAny]
+
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
 

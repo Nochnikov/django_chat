@@ -80,7 +80,7 @@ class ChatListView(generics.ListAPIView):
     queryset = PrivateChat.objects.all()
     serializer_class = ChatSerializer
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoModelPermissions]
 
     def get_queryset(self):
         user = self.request.user
@@ -185,6 +185,7 @@ class CurrentUserProfileView(generics.GenericAPIView,
                              mixins.UpdateModelMixin,
                              mixins.DestroyModelMixin,
                              mixins.RetrieveModelMixin):
+
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
 
@@ -202,6 +203,7 @@ class CurrentUserProfileView(generics.GenericAPIView,
     def get_object(self):
         instance = Profile.objects.get(user=self.request.user)
         return instance
+
 
 
 class RetrieveProfileView(generics.RetrieveAPIView):
