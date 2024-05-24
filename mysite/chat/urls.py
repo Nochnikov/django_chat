@@ -1,9 +1,8 @@
 from django.urls import path
-from chat.views import (RetrieveProfileView, GroupsListView, CreateGroupView, GroupsDetailView,
-                        FollowGroupView, ChatListView, ListCreatePrivateChat, ListCreatePublicChat,
+from chat.views import (RetrieveProfileView,ChatListView, ListCreatePrivateChat, ListCreatePublicChat,
                         DeleteUpdatePublicChatView,
                         DeletePrivateChatView, CreateUpdateGetDeletePrivateMessageView,
-                        CreateUpdateGetDeletePublicMessageView, CurrentUserProfileView, UnfollowGroupView, )
+                        CreateUpdateGetDeletePublicMessageView, CurrentUserProfileView,)
 urlpatterns = [
     path('', ChatListView.as_view(), name='chat-list'),
     path('private/', ListCreatePrivateChat.as_view(), name='chat-private'),
@@ -19,13 +18,6 @@ urlpatterns = [
 
     path('profile/me/', CurrentUserProfileView.as_view(), name='profile'),
     path('profile/<int:user_id>/', RetrieveProfileView.as_view(), name='profile_others'),
-
-    path('groups/', GroupsListView.as_view(), name='list_group'),
-    path('groups/create/', CreateGroupView.as_view(), name='create_group'),
-    path('groups/<int:pk>/', GroupsDetailView.as_view(), name='group_info'),
-    path('groups/<int:pk>/subscribe/', FollowGroupView.as_view(), name='group_join'),
-    path('groups/<int:pk>/unsubsribe/', UnfollowGroupView.as_view(), name='group_unjoin'),
-
 
 ]
 
