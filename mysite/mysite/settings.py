@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'chat',
+    'group',
     'django_extensions',
     'authorization',
     'rest_framework',
